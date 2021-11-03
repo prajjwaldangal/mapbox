@@ -1,0 +1,10 @@
+https://docs.airnowapi.org/Data/query
+
+Data: All Pollutants checked, Monitor Type 0, Data Type AQI, format text/csv, verbose=Yes, Raw=no
+
+NORTH America boundaries
+
+https://www.airnowapi.org/aq/data/?startDate=2021-10-17T20&endDate=2021-10-17T21&parameters=OZONE,PM25,PM10,CO,NO2,SO2&BBOX=-127.020874,23.671877,-65.145874,50.139721&dataType=A&format=text/csv&verbose=1&monitorType=0&includerawconcentrations=0&API_KEY=9DB19CB1-17D5-412D-9172-D2E46C62ED4C
+
+Colorado boundaries
+https://www.airnowapi.org/aq/data/?startDate=2021-10-16T00&endDate=2021-10-26T20&parameters=OZONE,PM25,PM10,CO,NO2,SO2&BBOX=-109.285851,37.008853,-101.903038,40.969266&dataType=A&format=text/csv&verbose=1&monitorType=0&includerawconcentrations=0&API_KEY=9DB19CB1-17D5-412D-9172-D2E46C62ED4C
