@@ -47,12 +47,12 @@
 	</div>
 
 	<script>
-		mapboxgl.accessToken = 'pk.eyJ1IjoicGRhbmdhbCIsImEiOiJja3RtMDkzejUyMHgyMnhwOGltbmJ2dGI1In0.SDzAt6moKJnqJx_w94KuLw';
+		mapboxgl.accessToken = 'pk.eyJ1IjoiZ2VybWFuc29sbyIsImEiOiJja3V5dHpvZmIzM295MnhwZzg4M2xnOHc3In0.U-NOtjpSXdiANFYgOPFJpA';
 		const map = new mapboxgl.Map({
 			container: 'map', // Specify the container ID
-			style: 'mapbox://styles/mapbox/navigation-day-v1',
+			style: 'mapbox://styles/germansolo/ckvftil344uu815nsnc1l3ev8', // Specify which map style to use
 			center: [-105.7821, 39.5501], // Specify the starting position [lng, lat]
-			zoom: 3.5 // Specify the starting zoom
+			zoom: 5.5 // Specify the starting zoom
 		});
 
 		// Create a popup
@@ -69,20 +69,16 @@
 		map.on('load', () => {
 			// When the map loads, add the data from the air quality API
 			map.addSource('airquality', {
-				'type': 'vector',
-				'url' : 'mapbox://pdangal.b6w6hf2e',
-				'generateId': true // This ensures that all features have unique IDs
+				'type': 'geojson',
+			'data': `https://api.mapbox.com/datasets/v1/germansolo/ckvftpeo5611b27pkup28dgs8/features?limit=100&access_token=pk.eyJ1IjoiZ2VybWFuc29sbyIsImEiOiJja3V5dHpvZmIzM295MnhwZzg4M2xnOHc3In0.U-NOtjpSXdiANFYgOPFJpA`, 
+			'generateId': true // This ensures that all features have unique IDs
 			});
-
-			// map.getSource('airquality').setUrl("mapbox://pdangal.b6w6hf2e");
 
 			// Add airquality as a layer and style it
 			map.addLayer({
 				'id': 'airquality-viz',
-				// replace the following with 'type':'fill'
 				'type': 'circle',
 				'source': 'airquality',
-				'source-layer': 'county_boundary_aqi_pollutant-88i6f2',
 				'paint': {
 			// The feature-state dependent circle-radius expression will render
 			// the radius size according to its magnitude when
@@ -136,7 +132,7 @@
 			);
 
 				const bansithedon = "{AQI: " + event.features[0].properties.AQI + "}    {Location: " 
-				+ event.features[0].properties.Location + "}";
+				+ event.features[0].properties.Location + "}"
 
 				popup.setLngLat(event.lngLat)
 				.setText(bansithedon)
