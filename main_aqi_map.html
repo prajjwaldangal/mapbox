@@ -52,7 +52,7 @@
 			container: 'map', // Specify the container ID
 			style: 'mapbox://styles/mapbox/navigation-day-v1',
 			center: [-105.7821, 39.5501], // Specify the starting position [lng, lat]
-			zoom: 3.5 // Specify the starting zoom
+			zoom: 2 // Specify the starting zoom
 		});
 
 		// Create a popup
@@ -80,26 +80,27 @@
 			map.addLayer({
 				'id': 'airquality-viz',
 				// replace the following with 'type':'fill'
-				'type': 'circle',
+				'type': 'fill',
 				'source': 'airquality',
 				'source-layer': 'county_boundary_aqi_pollutant-88i6f2',
 				'paint': {
 			// The feature-state dependent circle-radius expression will render
 			// the radius size according to its magnitude when
 			// a feature's hover state is set to true
-			'circle-radius': 8,
-			'circle-stroke-color': '#bfc9ca',
-			'circle-stroke-width': 1,
+			// 'fill-radius': 8,
+			// 'circle-stroke-color': '#bfc9ca',
+			// 'circle-stroke-width': 1,
 			// The feature-state dependent circle-color expression will render
 			// the color according to its magnitude when
 			// a feature's hover state is set to true
-			'circle-color': [
+			'fill-color': [
 				'case',
 				["<", ["get", "AQI"], "10"], "#00ff00",
 				["<", ["get", "AQI"], "20"], "#ffff00",
 				["<", ["get", "AQI"], "30"], "#ff8000",
 				[">", ["get", "AQI"], "30"], "#ff0000",
-				"#ccc"]
+				//["==", ["get", "AQI"], "N/A"], "#000000",
+				"#000000"]
 				}
 			});
 
@@ -107,40 +108,41 @@
 
 			map.on('mousemove', 'airquality-viz', (event) => {
 				map.getCanvas().style.cursor = 'pointer';
-			// Set variables equal to the current feature's AQI, location, and pollutant
-			const airAQI = event.features[0].properties.AQI;
-			const aieLocation = event.features[0].properties.Location;
-			const airPollutant = event.features[0].properties.Pollutant;
+				// Set variables equal to the current feature's AQI, location, and pollutant
+				const airAQI = event.features[0].properties.AQI;
+				const aieLocation = event.features[0].properties.COUNTY + "," + 
+							event.features[0].properties.STATE;
+				const airPollutant = event.features[0].properties.POLLUTANT;
 
-			if (event.features.length === 0) return;
-			// Display the AQI, location, and time in the sidebar
-			aqiDisplay.textContent = airAQI;
-			locDisplay.textContent = aieLocation;
-			pollutantDisplay.textContent = airPollutant;
+				if (event.features.length === 0) return;
+				// Display the AQI, location, and time in the sidebar
+				aqiDisplay.textContent = airAQI;
+				locDisplay.textContent = aieLocation;
+				pollutantDisplay.textContent = airPollutant;
 
-			// When the mouse moves over the airquality-viz layer, update the
-			// feature state for the feature under the mouse
-			if (airDataID) {
-				map.removeFeatureState({
+				// When the mouse moves over the airquality-viz layer, update the
+				// feature state for the feature under the mouse
+				if (airDataID) {
+					map.removeFeatureState({
+						source: 'airquality',
+						id: airDataID
+					});
+				}
+
+				airDataID = event.features[0].id;
+
+				map.setFeatureState({
 					source: 'airquality',
-					id: airDataID
-				});
-			}
+					airDataID}, 
+					{ hover: true }
+				);
 
-			airDataID = event.features[0].id;
-
-			map.setFeatureState({
-				source: 'airquality',
-				airDataID}, 
-				{ hover: true }
-			);
-
-				const bansithedon = "{AQI: " + event.features[0].properties.AQI + "}    {Location: " 
-				+ event.features[0].properties.Location + "}";
+				const relevantStrings = "{AQI: " + event.features[0].properties.AQI + "}    {Location: " 
+					+ event.features[0].properties.Location + "}";
 
 				popup.setLngLat(event.lngLat)
-				.setText(bansithedon)
-				.addTo(map);
+					.setText(relevantStrings)
+					.addTo(map);
 			});
 
 			// When the mouse leaves the airquality-viz layer, update the
