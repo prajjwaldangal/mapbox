@@ -1,52 +1,146 @@
 <!DOCTYPE html>
-	<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<title>Colorado air quality map</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.js"></script>
-		<link
-		href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.css"
-		rel="stylesheet"
-		/>
-		<style>
-		body {
-			margin: 0;
-			padding: 0;
-		}
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Colorado air quality map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.js"></script>
+    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v2.5.1/mapbox-gl.css"
+          rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
 
-		#map {
-			position: absolute;
-			top: 0;
-			bottom: 0;
-			width: 100%;
-		}
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
 
-		.airdata {
-			position: absolute;
-			font-family: sans-serif;
-			margin-top: 5px;
-			margin-left: 5px;
-			padding: 5px;
-			width: 30%;
-			border: 2px solid black;
-			font-size: 14px;
-			color: #222;
-			background-color: #fff;
-			border-radius: 3px;
-		}
-	</style>
+        .airdata {
+            position: absolute;
+            font-family: sans-serif;
+            margin-top: 5px;
+            margin-left: 5px;
+            padding: 5px;
+            width: 30%;
+            border: 2px solid black;
+            font-size: 14px;
+            color: #222;
+            background-color: #fff;
+            border-radius: 3px;
+        }
+
+        h1 {
+            font-size: 20px;
+            line-height: 30px;
+        }
+
+        h2 {
+            font-size: 14px;
+        }
+
+        h3 {
+            font-size: 10px;
+            line-height: 20px;
+            margin-bottom: 10px;
+        }
+
+        #console {
+            position: absolute;
+            margin-top: 100px;
+            margin-left: 20px;
+            padding: 5px;
+            background-color: white;
+            border: 2px solid black;
+            font-size: 14px;
+            border-radius: 3px;
+        }
+
+        .session {
+            margin-bottom: 10px;
+        }
+        /* Create two equal columns that floats next to each other */
+        .column {
+            float: left;
+            width: 50%;
+            height: 170px;
+        }
+
+        .row {
+            width: 50%;
+        }
+
+        .row2 {
+            width: 100%;
+        }
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        .colors {
+            background: linear-gradient(to bottom, #00e400, #ffff00, #ff7e00, #ff0000, #8f3f97, #7e0023);
+            height: 170px;
+        }
+
+        .label {
+            text-align: left;
+        }
+    </style>
 </head>
 
 <body>
-	<div id="map"></div>
-	<div class="airdata" style="border-radius: 10px; margin-left: 20px; margin-top: 20px;">
-		<div><strong>Air Quality Index:</strong>&nbsp;<span id="AQI"></span></div>
-		<div><strong>Location:</strong>&nbsp;<span id="loc"></span></div>
-		<div><strong>Pollutant:</strong>&nbsp;<span id="Pollutant"></span></div>
-	</div>
+    <div id="map"></div>
+    <div class="airdata" style="border-radius: 10px; margin-left: 20px; margin-top: 20px;">
+        <div><strong>Air Quality Index:</strong>&nbsp;<span id="AQI"></span></div>
+        <div><strong>Location:</strong>&nbsp;<span id="loc"></span></div>
+        <div><strong>Pollutant:</strong>&nbsp;<span id="Pollutant"></span></div>
+    </div>
 
-	<script>
+    <div id='console' style="border-radius: 10px; margin-left: 20px; margin-top: 100px;">
+        <h1>Air Quality</h1>
+        <p>Data:Air Quality in North America</p>
+        <div class='session'>
+            <h2>Quality indicator</h2>
+            <div class=" column">
+                Good
+                <p>Moderate</p>
+                <p>USG</p>
+                <p>Unhealthy</p>
+                <p>Very Unhealthy</p>
+                <p>Hazardous</p>
+            </div>
+            <div class=" column">
+                <div class='row colors'>
+                </div>
+            </div>
+        </div>
+        <div class='session'
+             id='sliderbar'>
+            <h1>Day: <label id='active-day'>2021-10-20</label></h1>
+            <input id='slider'
+                   class='row2'
+                   type='range'
+                   min='1'
+                   max='31'
+                   step='1'
+                   value='20' />
+        </div>
+    </div>
+    <div class="map-overlay">
+        <fieldset>
+            <input id="feature-filter" type="text" placeholder="Filter results by name">
+        </fieldset>
+        <div id="feature-listing" class="listing"></div>
+    </div>
+
+    <script>
 		mapboxgl.accessToken = 'pk.eyJ1IjoicGRhbmdhbCIsImEiOiJja3RtMDkzejUyMHgyMnhwOGltbmJ2dGI1In0.SDzAt6moKJnqJx_w94KuLw';
 		const map = new mapboxgl.Map({
 			container: 'map', // Specify the container ID
@@ -104,45 +198,53 @@
 				}
 			});
 
+            document.getElementById('slider').addEventListener('input', (event) => {
+                const day = parseInt(event.target.value);
+                // update the map
+                map.setFilter('airquality-viz', ["in", day, ["get", "UTC"]]);
+
+                // Update text in the UI
+                document.getElementById('active-day').innerText = "2021-10-" + day;
+            });
+
 			let airDataID = null;
 
 			map.on('mousemove', 'airquality-viz', (event) => {
 				map.getCanvas().style.cursor = 'pointer';
-				// Set variables equal to the current feature's AQI, location, and pollutant
-				const airAQI = event.features[0].properties.AQI;
-				const aieLocation = event.features[0].properties.COUNTY + "," + 
-							event.features[0].properties.STATE;
-				const airPollutant = event.features[0].properties.POLLUTANT;
+			// Set variables equal to the current feature's AQI, location, and pollutant
+			const airAQI = event.features[0].properties.AQI;
+			const aieLocation = event.features[0].properties.COUNTY + ", " + event.features[0].properties.STATE;
+			const airPollutant = event.features[0].properties.POLLUTANT;
 
-				if (event.features.length === 0) return;
-				// Display the AQI, location, and time in the sidebar
-				aqiDisplay.textContent = airAQI;
-				locDisplay.textContent = aieLocation;
-				pollutantDisplay.textContent = airPollutant;
+			if (event.features.length === 0) return;
+			// Display the AQI, location, and time in the sidebar
+			aqiDisplay.textContent = airAQI;
+			locDisplay.textContent = aieLocation;
+			pollutantDisplay.textContent = airPollutant;
 
-				// When the mouse moves over the airquality-viz layer, update the
-				// feature state for the feature under the mouse
-				if (airDataID) {
-					map.removeFeatureState({
-						source: 'airquality',
-						id: airDataID
-					});
-				}
-
-				airDataID = event.features[0].id;
-
-				map.setFeatureState({
+			// When the mouse moves over the airquality-viz layer, update the
+			// feature state for the feature under the mouse
+			if (airDataID) {
+				map.removeFeatureState({
 					source: 'airquality',
-					airDataID}, 
-					{ hover: true }
-				);
+					id: airDataID
+				});
+			}
 
-				const relevantStrings = "{AQI: " + event.features[0].properties.AQI + "}    {Location: " 
-					+ event.features[0].properties.Location + "}";
+			airDataID = event.features[0].id;
+
+			map.setFeatureState({
+				source: 'airquality',
+				airDataID},
+				{ hover: true }
+			);
+
+				const aqiLocPoltnt = "{AQI: " + event.features[0].properties.AQI + "}    {Location: "
+				+ event.features[0].properties.Location + "}"
 
 				popup.setLngLat(event.lngLat)
-					.setText(relevantStrings)
-					.addTo(map);
+				.setText(aqiLocPoltnt)
+				.addTo(map);
 			});
 
 			// When the mouse leaves the airquality-viz layer, update the
@@ -169,6 +271,6 @@
 			map.getCanvas().style.cursor = '';
 			});
 		});
-</script>
+    </script>
 </body>
-</html>
+</html> 
