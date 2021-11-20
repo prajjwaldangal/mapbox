@@ -4,5 +4,5 @@ from django.shortcuts import render
 
 def index(request):
     template = loader.get_template('NewMainAQI.html')
+    # template = loader.get_template('simple.html')
     return HttpResponse(template.render())
-    # return HttpResponse("Hello, world. You're at the air data visualization index.")	
